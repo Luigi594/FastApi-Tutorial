@@ -63,6 +63,36 @@ async def get_user(user_id: int):
 
 
 # query string parameter ?key=value
-@app.get("/userquery")
+@app.get("/user-query")
 async def get_user(user_id: int):
     return search_user(user_id)
+
+
+@app.post("/new-user")
+async def create_user(user: User):
+    existing_user = search_user(user.id)
+
+    # if the user exists and is a User object
+    if type(existing_user) == User:
+        return {"message": "User already exists"}
+    else:
+        user_lists.append(user)
+        return user
+
+
+@app.put("/update-user/{user_id}")
+async def update_user(user_id: int, user: User):
+    existing_user = search_user(user_id)
+
+    user_lists[existing_user.id] = user
+
+    return {"message": "User updated successfully"}
+
+
+@app.delete("/delete-user/{user_id}")
+async def delete_user(user_id: int):
+    existing_user = search_user(user_id)
+
+    if type(existing_user) == User:
+        user_lists.remove(existing_user)
+        return {"message": "User deleted successfully"}
