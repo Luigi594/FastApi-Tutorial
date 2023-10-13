@@ -3,6 +3,7 @@
 fastapi
 uvicorn[standard]
 sqlalchemy
+aiosqlite
 databases[aiosqlite]
 python-dotenv
 pydantic-settings

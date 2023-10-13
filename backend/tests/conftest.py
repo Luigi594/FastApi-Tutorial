@@ -1,13 +1,16 @@
 # configure test, to share multiple test files
-
+import os
 from typing import AsyncGenerator, Generator
 
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from backend.main import app
 from backend.models.posts import comment_table, post_table
+
+os.getenv["ENV_STATE"] = "test"
+
+from backend.main import app  # noqa: E402
 
 
 # run once for the entire test session
