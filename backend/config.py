@@ -4,13 +4,11 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class BaseConfig(BaseSettings):
+class BaseConfig(BaseSettings, extra="allow"):
     # dev, test or prod environment
     ENV_STATE: Optional[str] = None
     # the name of our file that contains the variables
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
 # don't allow Pydantic to read the database connection string

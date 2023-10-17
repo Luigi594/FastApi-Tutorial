@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from backend.models.posts import comment_table, post_table
+from backend.database import engine
 
 os.getenv["ENV_STATE"] = "test"
 
@@ -30,10 +30,9 @@ def client() -> Generator:
 # clean all tables before run the test
 @pytest.fixture(autouse=True)  # -> runs in every test
 async def db() -> AsyncGenerator:
-    post_table.clear()
-    comment_table.clear()
-
+    engine.connect()
     yield
+    engine.dispose()
 
 
 @pytest.fixture()

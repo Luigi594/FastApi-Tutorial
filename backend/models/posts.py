@@ -26,8 +26,3 @@ class Comments(CommentsIn):
 class UserPostWithComments(BaseModel):
     post: UserPost
     comments: list[Comments]
-
-
-# just for testing, later we will use a database
-post_table = {}
-comment_table = {}

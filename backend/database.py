@@ -1,5 +1,4 @@
 from config import config
-from databases import Database
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -34,5 +33,3 @@ engine = create_engine(
 )
 
 metadata.create_all(engine)
-
-database = Database(config.DATABASE_URL, force_rollback=config.DB_FORCE_ROLL_BACK)

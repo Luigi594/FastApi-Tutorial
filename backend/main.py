@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from database import database
+from database import engine
 from fastapi import FastAPI
 from routes.posts import router as posts_router
 
@@ -8,9 +8,10 @@ from routes.posts import router as posts_router
 # connect to the database before requests
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await database.connect()
-    yield
-    await database.disconnect()
+    with engine.connect() as connection:
+        connection
+        yield
+        connection.close()
 
 
 # Create the FastAPI app
