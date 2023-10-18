@@ -28,8 +28,6 @@ comment_table = Table(
 
 
 # check_same_thread just for sqlite
-engine = create_engine(
-    config.DATABASE_URL, connect_args={"check_same_thread": False}, echo=True
-)
+engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False})
 
 metadata.create_all(engine)

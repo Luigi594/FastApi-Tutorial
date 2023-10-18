@@ -1,3 +1,5 @@
+import logging
+
 from database import comment_table, engine, post_table
 from fastapi import APIRouter, HTTPException
 from models.posts import CommentsIn, UserPostIn
@@ -6,12 +8,17 @@ from sqlalchemy.orm import Session
 from utils.find_post import find_post
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # response_model=list[UserPost] -> return a list of UserPost
 @router.get("/")
 async def get_posts():
+    logger.info("Getting all posts")
+
     query = select(post_table)
+
+    logger.debug(query)
 
     with Session(engine) as session:
         result = session.execute(query)
@@ -23,6 +30,8 @@ async def get_posts():
 
 @router.post("/new", status_code=201)
 async def create_post(post: UserPostIn):
+    logger.info("Creating a new post")
+
     # model_dump Generate a dictionary representation of the model, optionally
     # specifying which fields to include or exclude
     data = post.model_dump()
@@ -31,6 +40,9 @@ async def create_post(post: UserPostIn):
     with Session(engine) as session:
         try:
             result = session.execute(query_insert)
+
+            logger.debug(result)
+
             session.commit()
 
             return {**data, "id": result.inserted_primary_key[0]}

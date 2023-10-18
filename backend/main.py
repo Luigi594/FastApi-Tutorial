@@ -1,14 +1,20 @@
+import logging
 from contextlib import asynccontextmanager
 
 from database import engine
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.exception_handlers import http_exception_handler
+from loggin_conf import configure_loggin
 from routes.posts import router as posts_router
+
+logger = logging.getLogger(__name__)
 
 
 # connect to the database before requests
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     with engine.connect() as connection:
+        configure_loggin()
         connection
         yield
         connection.close()
@@ -25,3 +31,9 @@ app = FastAPI(lifespan=lifespan)
 
 # Starting the Udemy course
 app.include_router(posts_router, prefix="/posts")
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handle_logging(request, exc):
+    logger.error(f"HTTPException: {exc.status_code} {exc.detail}")
+    return await http_exception_handler(request, exc)
