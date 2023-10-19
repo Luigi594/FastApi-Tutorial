@@ -1,6 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
+from asgi_correlation_id import CorrelationIdMiddleware
 from database import engine
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
 # accessing the FastAPI class from the fastapi package
 # initial context
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(CorrelationIdMiddleware)
 
 # uvicorn main:app --reload -> run the server
 # http://127.0.0.1:8000/docs -> swagger documentation

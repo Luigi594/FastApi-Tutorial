@@ -17,6 +17,7 @@ class GlobalConfig(BaseConfig):
 
     # for every test the database is cleared
     DB_FORCE_ROLL_BACK: bool = False
+    LOGTAIL_API_KEY: Optional[str] = None
 
 
 class DevConfig(GlobalConfig):
