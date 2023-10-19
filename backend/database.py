@@ -26,6 +26,13 @@ comment_table = Table(
     Column("post_id", ForeignKey("posts.id"), nullable=False),
 )
 
+user_table = Table(
+    "users",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("email", String, unique=True),
+    Column("password", String),
+)
 
 # check_same_thread just for sqlite
 engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False})
