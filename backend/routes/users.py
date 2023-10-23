@@ -33,7 +33,7 @@ async def register(user: UserIn):
         try:
             session.execute(query)
             session.commit()
-
+            session.close()
             return {"message": "User created successfully"}
         except Exception as e:
             session.rollback()
