@@ -12,10 +12,11 @@ from models.posts import (
 )
 from models.users import User
 from security.security import get_current_user
-from sqlalchemy import insert, select
+from sqlalchemy import desc, insert, select
 from sqlalchemy.orm import Session
 from utils.find_post import find_post
-from utils.post_with_likes import select_post_and_likes
+from utils.post_with_likes import base_query, select_post_and_likes
+from utils.sorting_posts import PostSorting
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -23,10 +24,20 @@ logger = logging.getLogger(__name__)
 
 # response_model=list[UserPost] -> return a list of UserPost
 @router.get("/", response_model=dict)
-async def get_posts():
+async def get_posts(
+    current_user: Annotated[User, Depends(get_current_user)],
+    sorting: PostSorting = PostSorting.new,
+):
     logger.info("Getting all posts")
 
-    query = select(post_table)
+    if sorting == PostSorting.new:
+        query = base_query.order_by(post_table.c.id.desc())
+
+    elif sorting == PostSorting.old:
+        query = base_query.order_by(post_table.c.id.asc())
+
+    else:
+        query = base_query.order_by(desc("likes"))
 
     logger.debug(query)
 
@@ -120,16 +131,16 @@ async def get_post_with_comments(post_id: int):
 # like funcionality for a post
 @router.post("/like", status_code=201)
 async def like_post(
-    post: PostLikeIn, current_user: Annotated[User, Depends(get_current_user)]
+    liking_post: PostLikeIn, current_user: Annotated[User, Depends(get_current_user)]
 ):
     logger.info("Liking a post")
 
-    post = await find_post(post.post_id)
+    post = await find_post(liking_post.post_id)
 
     if not post:
         raise HTTPException(status_code=404, detail="Post was not found")
 
-    data = {**post.model_dump(), "user_id": current_user.id}
+    data = {**liking_post.model_dump(), "user_id": current_user.id}
 
     query_insert = insert(likes_table).values(**data)
 
