@@ -14,6 +14,8 @@ class BaseConfig(BaseSettings, extra="allow"):
 # don't allow Pydantic to read the database connection string
 class GlobalConfig(BaseConfig):
     DATABASE_URL: Optional[str] = None
+    MAILGUN_API_KEY: Optional[str] = None
+    MAILGUN_DOMAIN: Optional[str] = None
 
     # for every test the database is cleared
     DB_FORCE_ROLL_BACK: bool = False
