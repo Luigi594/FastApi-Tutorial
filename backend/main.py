@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from loggin_conf import configure_loggin
 from routes.posts import router as posts_router
+from routes.upload_files import router as upload_files_router
 from routes.users import router as users_router
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ app.add_middleware(CorrelationIdMiddleware)
 # Starting the Udemy course
 app.include_router(posts_router, prefix="/posts")
 app.include_router(users_router, prefix="/users")
+app.include_router(upload_files_router, prefix="/uploads")
 
 
 @app.exception_handler(HTTPException)

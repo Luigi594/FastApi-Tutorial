@@ -14,3 +14,5 @@ logtail-python
 python-jose
 python-multipart
 passlib[bcrypt]
+aiofiles # work with system files asynchronously
+b2sdk # backblaze b2 cloud storage
