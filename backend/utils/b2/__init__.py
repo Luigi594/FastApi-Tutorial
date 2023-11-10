@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # to connect with the B2 API
 @lru_cache()
-def b2_api():
+def b2_get_api():
     logger.debug("Connecting to B2 API")
 
     info = b2.InMemoryAccountInfo()
@@ -23,13 +23,15 @@ def b2_api():
 # to get the bucket name
 @lru_cache()
 def b2_get_bucket(api: b2.B2Api):
-    return api.get_bucket_by_name(config.B2_BUCKET_NAME)
+    bucket_name = api.get_bucket_by_name(config.B2_BUCKET_NAME)
+    print(f"Getting bucket {bucket_name}")
+    return bucket_name
 
 
 # this one is for actually upload the file and then
 # return the URL so we can use it in the frontend
 def b2_upload_file(local_file: str, file_name: str) -> str:
-    api = b2_api()
+    api = b2_get_api()
 
     logger.debug("Uploading file to B2")
 

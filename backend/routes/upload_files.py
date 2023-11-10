@@ -15,7 +15,6 @@
 
 import tempfile
 
-import aiofiles
 from fastapi import APIRouter, HTTPException, UploadFile, status
 from utils.b2 import b2_upload_file
 
@@ -25,7 +24,7 @@ router = APIRouter()
 CHUNK_SIZE = 1024 * 1024  # 1MB
 
 
-@router.post("/upload", status_code=201)
+@router.post("/", status_code=201)
 async def upload_file(file: UploadFile):
     # in order to get the next chunk:
     # reads the chunk that has already been uploaded
@@ -36,21 +35,20 @@ async def upload_file(file: UploadFile):
     # that we can later store in a file
 
     try:
-        with tempfile.NamedTemporaryFile() as temp_file:
+        with tempfile.NamedTemporaryFile(mode="wb") as temp_file:
             filename = temp_file.name  # the temporary file name
 
-            # wb is write binary
-            async with aiofiles.open(filename, "wb") as buffer:
-                # while the file is uploading, we will read the chunks
-                while content := await file.read(CHUNK_SIZE):
-                    await buffer.write(content)
+            # while the file is uploading, we will read the chunks
+            while content := await file.read(CHUNK_SIZE):
+                temp_file.write(content)
 
-            file_url = b2_upload_file(file_name=filename, local_file=file.filename)
+            file_url = b2_upload_file(local_file=filename, file_name=file.filename)
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error uploading file",
-        )
+        ) from e
 
     return {"detail": f"Successfully uploaded {file.filename}", "file_url": file_url}
