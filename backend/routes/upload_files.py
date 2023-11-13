@@ -13,7 +13,7 @@
 # the last chunk, fastapi will put all the chunks into a single file
 # finally will delete the chunks
 
-import tempfile
+import os
 
 from fastapi import APIRouter, HTTPException, UploadFile, status
 from utils.b2 import b2_upload_file
@@ -22,6 +22,10 @@ router = APIRouter()
 
 # define the chunk size
 CHUNK_SIZE = 1024 * 1024  # 1MB
+
+# custom temp folder to avoid to write in temp folder from Windows Os
+# sooo didn't workout with tempfile, so that's why I'm using this
+CUSTOM_TEMP_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "temp")
 
 
 @router.post("/", status_code=201)
@@ -35,20 +39,22 @@ async def upload_file(file: UploadFile):
     # that we can later store in a file
 
     try:
-        with tempfile.NamedTemporaryFile(mode="wb") as temp_file:
-            filename = temp_file.name  # the temporary file name
+        file_path = os.path.join(CUSTOM_TEMP_FOLDER, file.filename)
 
-            # while the file is uploading, we will read the chunks
+        with open(file_path, "wb") as buffer:
             while content := await file.read(CHUNK_SIZE):
-                temp_file.write(content)
+                buffer.write(content)
 
-            file_url = b2_upload_file(local_file=filename, file_name=file.filename)
+        # upload the file to the B2 bucket
+        file_url = b2_upload_file(local_file=file_path, file_name=file.filename)
 
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error uploading file",
-        ) from e
+            detail="Error while uploading file",
+        )
+    finally:
+        # delete the file from the temp folder
+        os.remove(file_path)
 
     return {"detail": f"Successfully uploaded {file.filename}", "file_url": file_url}
