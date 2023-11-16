@@ -2,11 +2,12 @@ import logging
 from typing import Annotated
 
 from database import comment_table, engine, likes_table, post_table
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from models.posts import (
     Comments,
     CommentsIn,
     PostLikeIn,
+    UserPost,
     UserPostIn,
     UserPostWithComments,
 )
@@ -15,6 +16,7 @@ from security.security import get_current_user
 from sqlalchemy import desc, insert, select
 from sqlalchemy.orm import Session
 from utils.find_post import find_post
+from utils.generate_images import generate_and_add_to_post
 from utils.post_with_likes import base_query, select_post_and_likes
 from utils.sorting_posts import PostSorting
 
@@ -49,11 +51,14 @@ async def get_posts(
         return {"posts": json_result}
 
 
-@router.post("/new", status_code=201)
+@router.post("/new", response_model=UserPost, status_code=201)
 async def create_post(
     post: UserPostIn,
     # grab the user authenticated by the token
     current_user: Annotated[User, Depends(get_current_user)],
+    background_task: BackgroundTasks,
+    request: Request,
+    prompt: str = None,
 ):
     logger.info("Creating a new post")
 
@@ -70,6 +75,18 @@ async def create_post(
 
             session.commit()
             session.close()
+
+            if prompt:
+                background_task.add_task(
+                    generate_and_add_to_post,
+                    current_user.email,
+                    result.inserted_primary_key[0],
+                    request.url_for(
+                        "get_post_with_comments", post_id=result.inserted_primary_key[0]
+                    ),
+                    prompt,
+                )
+
             return {**data, "id": result.inserted_primary_key[0]}
         except Exception as e:
             session.rollback()
