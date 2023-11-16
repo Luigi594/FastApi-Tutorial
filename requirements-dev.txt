@@ -2,5 +2,4 @@ ruff
 isort
 # black -> formatter
 pytest
-httpx
 pytest-mock

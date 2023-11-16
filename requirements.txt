@@ -5,6 +5,7 @@ uvicorn[standard]
 sqlalchemy
 aiosqlite
 databases[aiosqlite]
+httpx
 python-dotenv
 pydantic-settings
 rich
