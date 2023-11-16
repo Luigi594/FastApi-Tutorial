@@ -1,4 +1,3 @@
-from config import config
 from sqlalchemy import (
     Boolean,
     Column,
@@ -9,6 +8,8 @@ from sqlalchemy import (
     Table,
     create_engine,
 )
+
+from config import config
 
 metadata = MetaData()
 
@@ -48,6 +49,6 @@ likes_table = Table(
 )
 
 # check_same_thread just for sqlite
-engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(config.DATABASE_URL, pool_size=3, max_overflow=0)
 
 metadata.create_all(engine)
